@@ -1,27 +1,72 @@
-DOKUMENTASI LOGIKA PROGRAM DAN STRATEGI ALGORITMA
-TOPIK 12: APLIKASI PEMANTAUAN KESEHATAN DAN POLA TIDUR
+Aplikasi Pemantauan Kesehatan dan Pola Tidur Sederhana
 
-1. PENANGANAN SIKLUS WAKTU 24 JAM (OVERNIGHT SLEEP CALCULATION)
-   - Kasus Khusus: Input jam bangun secara nominal lebih kecil dari jam tidur akibat melewati ambang batas tengah malam (contoh: Tidur 22:00, Bangun 05:30).
-   - Solusi: Seluruh parameter input berbasis jam dan menit dikonversi ke dalam satuan menit (skala absolut harian). Jika total menit bangun < total menit tidur, diterapkan operasi kompensasi rotasi waktu harian:
-     selisihMenit = ((24 * 60) - totalMenitTidur) + totalMenitBangun
-   - Pendekatan ini menjamin nilai durasi desimal (float64) yang dihasilkan tetap akurat tanpa memerlukan dependensi dari library waktu eksternal.
+Deskripsi:
+Program berbasis konsol ini dirancang untuk melakukan manajemen data riwayat tidur pengguna, menghitung durasi tidur secara otomatis (termasuk penanganan pergantian hari), memberikan klasifikasi kualitas tidur, serta menyajikan laporan analisis statistik harian dan mingguan.
 
-2. TERMINASI PERULANGAN LOGIS TANPA KEYWORD 'BREAK' DAN 'CONTINUE'
-   - Aturan Batasan: Program dilarang menggunakan keyword kontrol interupsi instruksi (break/continue).
-   - Implementasi: Proses pencarian indeks pada fungsi CRUD dan Searching dikendalikan menggunakan variabel penanda (sentinel variable) yang diintegrasikan langsung ke dalam kondisi terminasi perulangan 'for'.
-   - Contoh Logika (Sequential Search):
-     for i < TotalData && indeksKetemu == -1
-   - Iterasi akan berhenti secara natural melalui dua jalur evaluasi: seluruh elemen array selesai diperiksa (i >= TotalData) atau target data telah ditemukan (indeksKetemu != -1).
+Spesifikasi:
+a. Pengguna dapat menambahkan, mengubah, dan menghapus daftar riwayat tidur.
+b. Sistem memberikan klasifikasi kualitas tidur ("Baik", "Cukup", "Kurang") dan catatan medis secara otomatis berdasarkan durasi riwayat.
+c. Pengguna dapat mencari riwayat tidur berdasarkan kata kunci tanggal menggunakan sequentialSearchTanggal dan binarySearchTanggal.
+d. Pengguna dapat mengurutkan daftar riwayat berdasarkan nilai durasi menggunakan selectionSortDurasi atau berdasarkan kronologi tanggal menggunakan insertionSortTanggal (Menaik/Menurun).
+e. Sistem menyajikan laporan evaluasi mingguan berupa rata-rata durasi tidur harian dari maksimal 7 data terakhir beserta status kondisi kesehatannya.
 
-3. STRUKTUR MENU UTAMA VIA SWITCH-CASE
-   - Implementasi menu pada fungsi utama memanfaatkan struktur switch-case di dalam perulangan tak terbatas (looping bersyarat). 
-   - Dalam karakteristik bahasa Go, switch-case memiliki sifat bawaan 'implicit break' (tidak terjadi fall-through ke case berikutnya secara default). Hal ini dimanfaatkan untuk menjaga kebersihan sintaks tanpa melanggar batasan larangan keyword 'break' pada perulangan luar, karena kontrol keluar dari loop utama murni dikendalikan oleh evaluasi nilai variabel 'pilihan' (for pilihan != 7).
+Logic:
+1. Daftar Riwayat Tidur
+    Array dengan tipe data buatan polaTidur bernama tabTidur dengan kapasitas maksimum nMAX = 1000.
+    Tipe data buatan polaTidur memiliki atribut Tanggal(string), WaktuTidur(tWaktu), WaktuBangun(tWaktu), Durasi(float64), Kualitas(string), dan Saran(string).
+    Tipe data buatan tWaktu memiliki atribut Jam(int) dan Menit(int).
+    Pencatatan total data yang tersimpan dikendalikan oleh variabel global nData.
 
-4. SYARAT PRE-KONDISI ALGORITMA BINARY SEARCH
-   - Karakteristik Algoritma: Binary Search memerlukan ruang pencarian yang sudah terurut secara monoton (monotonically ordered).
-   - Strategi: Program dirancang agar fitur Binary Search (pencarian biner berdasarkan tanggal) hanya dapat mengeluarkan hasil yang valid apabila pengguna telah mengeksekusi prosedur pengurutan data (Insertion Sort) terlebih dahulu pada Menu 2.
+2. Kalkulasi Otomatis & Klasifikasi Medis
+    Fungsi hitungDurasi menghitung selisih waktu tidur dan bangun dalam satuan desimal jam. Jika total menit bangun kurang dari total menit tidur, logika if-else akan memproses penanganan lintas hari (pergantian malam).
+    Fungsi kualitasDanSaran menentukan klasifikasi kualitas dan catatan medis menggunakan pointer (*kualitas dan *saran) berdasarkan nilai Durasi:
+        - Durasi 7.0 s.d. 9.0 jam = Kualitas "Baik" (Pola tidur ideal).
+        - Durasi > 9.0 jam = Kualitas "Cukup" (Durasi tidur berlebih).
+        - Durasi < 7.0 jam = Kualitas "Kurang" (Durasi tidur kurang).
 
-5. MANIPULASI MEMORI ARRAY STATIS (PROSEDUR DELESI)
-   - Batasan Memori: Menggunakan array statis berkapasitas tetap (MAX = 1000) tanpa alokasi memori dinamis (slice).
-   - Solusi Hapus Data: Penghapusan dilakukan dengan mencari indeks target menggunakan sequential search. Jika ditemukan, dilakukan proses penimpaan nilai dengan cara menggeser elemen di sebelah kanan indeks target satu langkah ke kiri (index shifting) dari posisi indeks hingga posisi (TotalData - 1). Proses diakhiri dengan dekrementasi variabel counter utama (TotalData--).
+3. Sistem Validasi Binary Search (Flagging)
+    Variabel kontrol boolean dataTerurut digunakan sebagai indikator urutan data.
+    Nilai otomatis bernilai true hanya jika fungsi insertionSortTanggal dijalankan.
+    Nilai akan di-reset menjadi false jika fungsi tambahRiwayat, ubahRiwayat, hapusRiwayat, atau selectionSortDurasi dijalankan untuk menjaga validitas algoritma binarySearchTanggal.
+
+Func main (Menu Utama)
+    Menampilkan fungsi sambutan Welcome satu kali di awal program.
+    Melakukan perulangan menggunakan struktur for-loop dengan kondisi terminasi (pilihan != 7) tanpa keyword break/continue.
+    Menampilkan menu melalui fungsi CetakMenu dan menerima masukan angka switch-case:
+        case 1: Input Riwayat Tidur baru
+        case 2: Cetak dan Urutkan Riwayat Tidur
+        case 3: Cari Riwayat Tidur Berdasarkan Tanggal
+        case 4: Edit Riwayat Tidur
+        case 5: Hapus Riwayat Tidur
+        case 6: Cetak Laporan Evaluasi Mingguan
+        case 7: Selesai
+
+Func tambahRiwayat
+    Memasukkan data riwayat tidur baru pada array tabTidur di indeks nData jika kapasitas belum penuh, memanggil hitungDurasi dan kualitasDanSaran, lalu menaikkan nilai nData++.
+
+Func ubahRiwayat
+    Mencari indeks tanggal lama menggunakan fungsi pembantu cariIdxTanggal. Jika ditemukan (idx != -1), memperbarui parameter Tanggal, WaktuTidur, WaktuBangun, Durasi, Kualitas, dan Saran dengan data yang baru.
+
+Func hapusRiwayat
+    Mencari indeks tanggal target menggunakan fungsi cariIdxTanggal. Jika ditemukan, melakukan perulangan for-loop untuk menggeser elemen array ke kiri (tabTidur[i] = tabTidur[i+1]) guna menghapus data secara fisik, lalu menurunkan nilai nData--.
+
+Func cetakSemuaData
+    Menampilkan semua data riwayat tidur yang tersimpan menggunakan perulangan for-loop dari indeks i = 0 sampai i < nData ke layar konsol.
+
+Func selectionSortDurasi
+    Mengurutkan data di dalam array tabTidur berdasarkan nilai atribut Durasi secara naik (ascending) atau turun (descending) menggunakan algoritma Selection Sort.
+
+Func insertionSortTanggal
+    Mengurutkan data di dalam array tabTidur berdasarkan nilai atribut Tanggal secara naik (ascending) atau turun (descending) menggunakan algoritma Insertion Sort.
+
+Func sequentialSearchTanggal
+    Melakukan pencarian linier dari indeks awal hingga data ditemukan atau batas nData tercapai untuk mencari kecocokan targetTanggal pada array.
+
+Func binarySearchTanggal
+    Melakukan pencarian bagi-dua pada array tabTidur yang sudah terurut berdasarkan targetTanggal menggunakan variabel batas kiri, kanan, dan tengah.
+
+Func tampilkanHasilCari
+    Menerima parameter indeks hasil pencarian. Jika indeks valid (idx != -1), mencetak detail data riwayat tidur lengkap ke layar. Jika tidak, menampilkan pesan bahwa data tidak ditemukan.
+
+Func tampilkanLaporanMingguan
+    Memeriksa kondisi data, mengambil maksimal 7 data terakhir dari array tabTidur (menggunakan startIdx = nData - 7), menghitung total durasi, rata-rata harian, serta memberikan analisis kesimpulan kondisi kesehatan mingguan pengguna.
