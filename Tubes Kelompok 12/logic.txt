@@ -1,0 +1,27 @@
+DOKUMENTASI LOGIKA PROGRAM DAN STRATEGI ALGORITMA
+TOPIK 12: APLIKASI PEMANTAUAN KESEHATAN DAN POLA TIDUR
+
+1. PENANGANAN SIKLUS WAKTU 24 JAM (OVERNIGHT SLEEP CALCULATION)
+   - Kasus Khusus: Input jam bangun secara nominal lebih kecil dari jam tidur akibat melewati ambang batas tengah malam (contoh: Tidur 22:00, Bangun 05:30).
+   - Solusi: Seluruh parameter input berbasis jam dan menit dikonversi ke dalam satuan menit (skala absolut harian). Jika total menit bangun < total menit tidur, diterapkan operasi kompensasi rotasi waktu harian:
+     selisihMenit = ((24 * 60) - totalMenitTidur) + totalMenitBangun
+   - Pendekatan ini menjamin nilai durasi desimal (float64) yang dihasilkan tetap akurat tanpa memerlukan dependensi dari library waktu eksternal.
+
+2. TERMINASI PERULANGAN LOGIS TANPA KEYWORD 'BREAK' DAN 'CONTINUE'
+   - Aturan Batasan: Program dilarang menggunakan keyword kontrol interupsi instruksi (break/continue).
+   - Implementasi: Proses pencarian indeks pada fungsi CRUD dan Searching dikendalikan menggunakan variabel penanda (sentinel variable) yang diintegrasikan langsung ke dalam kondisi terminasi perulangan 'for'.
+   - Contoh Logika (Sequential Search):
+     for i < TotalData && indeksKetemu == -1
+   - Iterasi akan berhenti secara natural melalui dua jalur evaluasi: seluruh elemen array selesai diperiksa (i >= TotalData) atau target data telah ditemukan (indeksKetemu != -1).
+
+3. STRUKTUR MENU UTAMA VIA SWITCH-CASE
+   - Implementasi menu pada fungsi utama memanfaatkan struktur switch-case di dalam perulangan tak terbatas (looping bersyarat). 
+   - Dalam karakteristik bahasa Go, switch-case memiliki sifat bawaan 'implicit break' (tidak terjadi fall-through ke case berikutnya secara default). Hal ini dimanfaatkan untuk menjaga kebersihan sintaks tanpa melanggar batasan larangan keyword 'break' pada perulangan luar, karena kontrol keluar dari loop utama murni dikendalikan oleh evaluasi nilai variabel 'pilihan' (for pilihan != 7).
+
+4. SYARAT PRE-KONDISI ALGORITMA BINARY SEARCH
+   - Karakteristik Algoritma: Binary Search memerlukan ruang pencarian yang sudah terurut secara monoton (monotonically ordered).
+   - Strategi: Program dirancang agar fitur Binary Search (pencarian biner berdasarkan tanggal) hanya dapat mengeluarkan hasil yang valid apabila pengguna telah mengeksekusi prosedur pengurutan data (Insertion Sort) terlebih dahulu pada Menu 2.
+
+5. MANIPULASI MEMORI ARRAY STATIS (PROSEDUR DELESI)
+   - Batasan Memori: Menggunakan array statis berkapasitas tetap (MAX = 1000) tanpa alokasi memori dinamis (slice).
+   - Solusi Hapus Data: Penghapusan dilakukan dengan mencari indeks target menggunakan sequential search. Jika ditemukan, dilakukan proses penimpaan nilai dengan cara menggeser elemen di sebelah kanan indeks target satu langkah ke kiri (index shifting) dari posisi indeks hingga posisi (TotalData - 1). Proses diakhiri dengan dekrementasi variabel counter utama (TotalData--).
